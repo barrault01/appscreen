@@ -35,6 +35,12 @@
                         case 'new-project':
                             createProject();
                             break;
+                        case 'open-project':
+                            openProjectFromTauri();
+                            break;
+                        case 'save-project':
+                            exportProjectFile();
+                            break;
                         case 'import-screenshots':
                             importScreenshotsFromTauri();
                             break;
@@ -47,6 +53,14 @@
                         case 'settings':
                             document.getElementById('settings-btn')?.click();
                             break;
+                    }
+                });
+
+                // Handle .appscreen folder opened from Finder (double-click / Open With)
+                window.__TAURI__.event.listen('open-appscreen-file', async (event) => {
+                    const folderPath = event.payload;
+                    if (folderPath) {
+                        await importProjectFromPath(folderPath);
                     }
                 });
 
@@ -219,6 +233,23 @@
                                     <span class="device-option-size">1668 × 2388</span>
                                 </div>
                                 <div class="output-size-divider"></div>
+                                <div class="device-option" data-device="watch-ultra">
+                                    <span class="device-option-name">Apple Watch Ultra</span>
+                                    <span class="device-option-size">410 × 502</span>
+                                </div>
+                                <div class="device-option" data-device="watch-46">
+                                    <span class="device-option-name">Apple Watch 46mm</span>
+                                    <span class="device-option-size">396 × 484</span>
+                                </div>
+                                <div class="device-option" data-device="watch-42">
+                                    <span class="device-option-name">Apple Watch 42mm</span>
+                                    <span class="device-option-size">374 × 448</span>
+                                </div>
+                                <div class="device-option" data-device="watch-44">
+                                    <span class="device-option-name">Apple Watch 44mm</span>
+                                    <span class="device-option-size">368 × 448</span>
+                                </div>
+                                <div class="output-size-divider"></div>
                                 <div class="device-option" data-device="android-phone">
                                     <span class="device-option-name">Android Phone</span>
                                     <span class="device-option-size">1080 × 1920</span>
@@ -359,6 +390,25 @@
             <div class="sidebar-content">
             <!-- Background Tab -->
             <div class="tab-content active" id="tab-background">
+                <!-- Template Presets -->
+                <div class="control-group">
+                    <div class="section-toggle" id="templates-toggle">
+                        <label class="control-label" style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            Templates
+                        </label>
+                        <svg class="section-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    <div class="section-content" id="templates-section">
+                        <div class="template-presets-grid" id="template-presets-grid"></div>
+                    </div>
+                </div>
+
                 <div class="control-group">
                     <label class="control-label">Background Type</label>
                     <div class="btn-group" id="bg-type-selector">
@@ -371,6 +421,10 @@
                 <!-- Gradient Options -->
                 <div id="gradient-options">
                     <div class="control-group">
+                        <div id="extracted-colors-section" style="display: none;">
+                            <label class="control-label" style="margin-bottom: 6px;">From Screenshot</label>
+                            <div class="preset-grid" id="extracted-colors-grid" style="margin-bottom: 12px;"></div>
+                        </div>
                         <div class="preset-dropdown" id="gradient-preset-dropdown">
                             <button class="preset-dropdown-trigger" id="gradient-preset-trigger">
                                 <span>Gradient Presets</span>
@@ -497,6 +551,49 @@
                 </div>
 
                 <div class="divider"></div>
+
+                    <div class="control-group">
+                        <div class="toggle-row collapsible collapsed" data-target="pattern-settings">
+                            <span class="toggle-label">
+                                <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                Pattern Overlay
+                            </span>
+                            <div class="toggle" id="pattern-toggle"></div>
+                        </div>
+                    </div>
+                    <div id="pattern-settings" style="display: none;">
+                        <div class="control-group">
+                            <label class="control-label">Pattern Type</label>
+                            <div class="btn-group" id="pattern-type-selector">
+                                <button class="active" data-type="dots">Dots</button>
+                                <button data-type="grid">Grid</button>
+                                <button data-type="diagonals">Lines</button>
+                                <button data-type="waves">Waves</button>
+                                <button data-type="mesh">Mesh</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Scale</label>
+                            <div class="control-row">
+                                <input type="range" id="pattern-scale" min="5" max="80" value="25">
+                                <span class="range-value" id="pattern-scale-value">25</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Opacity</label>
+                            <div class="control-row">
+                                <input type="range" id="pattern-opacity" min="1" max="50" value="8">
+                                <span class="range-value" id="pattern-opacity-value">8%</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Color</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="pattern-color" value="#ffffff">
+                                <input type="text" id="pattern-color-hex" value="#ffffff">
+                            </div>
+                        </div>
+                    </div>
 
                 <div class="control-group">
                     <div class="toggle-row collapsible collapsed" data-target="noise-options">
@@ -872,6 +969,36 @@
                     </div>
                 </div>
 
+                    <div class="control-group">
+                        <div class="toggle-row" style="margin-bottom: 8px;">
+                            <span class="toggle-label">Gradient Text</span>
+                            <div class="toggle" id="headline-gradient-toggle"></div>
+                        </div>
+                    </div>
+                    <div id="headline-gradient-settings" style="display: none;">
+                        <div class="control-group">
+                            <label class="control-label">Direction</label>
+                            <div class="control-row">
+                                <input type="range" id="headline-gradient-angle" min="0" max="360" value="90">
+                                <span class="range-value" id="headline-gradient-angle-value">90°</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Start Color</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="headline-gradient-start" value="#ff6b6b">
+                                <input type="text" id="headline-gradient-start-hex" value="#ff6b6b">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">End Color</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="headline-gradient-end" value="#ffd93d">
+                                <input type="text" id="headline-gradient-end-hex" value="#ffd93d">
+                            </div>
+                        </div>
+                    </div>
+
                 <div class="control-group">
                     <label class="control-label">Text Position</label>
                     <div class="btn-group" id="text-position">
@@ -1025,6 +1152,12 @@
                         </svg>
                         Icon
                     </button>
+                    <button class="add-element-btn" id="add-badge-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 15l-3.5 2 .9-4L6 9.7l4-.3L12 6l2 3.4 4 .3-3.4 3.3.9 4z"/>
+                        </svg>
+                        Badge
+                    </button>
                     <input type="file" id="element-graphic-input" accept="image/*" hidden>
                 </div>
 
@@ -1066,10 +1199,15 @@
                     <div class="inline-picker-grid icon-grid" id="icon-grid"></div>
                 </div>
 
+                <!-- Inline Badge Picker Dropdown -->
+                <div class="inline-picker" id="badge-picker" style="display: none;">
+                    <div class="badge-picker-grid" id="badge-grid"></div>
+                </div>
+
                 <div class="elements-list" id="elements-list">
                     <div class="elements-empty" id="elements-empty">
                         <p>No elements yet</p>
-                        <p class="elements-empty-hint">Add graphics, text, emoji, or icons</p>
+                        <p class="elements-empty-hint">Add graphics, text, emoji, icons, or badges</p>
                     </div>
                 </div>
 
@@ -1190,6 +1328,77 @@
                                     <input type="range" id="element-icon-shadow-y" min="-50" max="50" value="10">
                                     <span class="range-value" id="element-icon-shadow-y-value">10px</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Badge element properties -->
+                    <div id="element-badge-properties" style="display: none;">
+                        <div class="divider"></div>
+                        <div class="control-group">
+                            <label class="control-label">Badge Type</label>
+                            <select id="badge-type-select">
+                                <optgroup label="Apple Awards">
+                                    <option value="editors-choice">Editor's Choice</option>
+                                    <option value="app-of-year">App of the Year</option>
+                                    <option value="featured-by">Featured by App Store</option>
+                                    <option value="app-of-day">App of the Day</option>
+                                    <option value="apple-spotlight">Apple Spotlight</option>
+                                </optgroup>
+                                <optgroup label="Stats">
+                                    <option value="reviews-count">100,000+ Reviews</option>
+                                    <option value="downloads-1m">1M+ Downloads</option>
+                                    <option value="downloads-5m">5M+ Downloads</option>
+                                    <option value="star-rated">5 Star Rated</option>
+                                    <option value="number-1">#1 Most Downloaded</option>
+                                </optgroup>
+                                <optgroup label="Social Proof">
+                                    <option value="review-quote">Review Quote</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="control-group" id="badge-topline-group">
+                            <label class="control-label">Top Text</label>
+                            <input type="text" id="badge-topline-input" placeholder="e.g. App Store" autocomplete="off">
+                        </div>
+                        <div class="control-group" id="badge-mainline-group">
+                            <label class="control-label">Main Text</label>
+                            <input type="text" id="badge-mainline-input" placeholder="e.g. Editor's Choice" autocomplete="off">
+                        </div>
+                        <div class="control-group" id="badge-subline-group" style="display:none;">
+                            <label class="control-label">Sub Text</label>
+                            <input type="text" id="badge-subline-input" placeholder="e.g. DOWNLOADS" autocomplete="off">
+                        </div>
+                        <div class="control-group" id="badge-quote-group" style="display:none;">
+                            <label class="control-label">Quote</label>
+                            <textarea id="badge-quote-input" rows="2" placeholder="Review text..."></textarea>
+                        </div>
+                        <div class="control-group" id="badge-top-scale-group">
+                            <label class="control-label">Top Text Scale</label>
+                            <div class="control-row">
+                                <input type="range" id="badge-top-scale" min="50" max="200" value="100">
+                                <span class="range-value" id="badge-top-scale-value">100%</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Main Text Scale</label>
+                            <div class="control-row">
+                                <input type="range" id="badge-main-scale" min="50" max="200" value="100">
+                                <span class="range-value" id="badge-main-scale-value">100%</span>
+                            </div>
+                        </div>
+                        <div class="control-group" id="badge-sub-scale-group">
+                            <label class="control-label">Sub Text Scale</label>
+                            <div class="control-row">
+                                <input type="range" id="badge-sub-scale" min="50" max="200" value="100">
+                                <span class="range-value" id="badge-sub-scale-value">100%</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Color</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="badge-fg-color" value="#ffffff">
+                                <input type="text" id="badge-fg-color-hex" value="#ffffff">
                             </div>
                         </div>
                     </div>
