@@ -22,3 +22,7 @@ frontend-dist/
 *.AppImage
 *.deb
 *.snap
+
+# Tauri signing keys
+src-tauri/tauri.key
+src-tauri/tauri.key.pub
