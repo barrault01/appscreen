@@ -26,7 +26,12 @@ const state = {
             overlayColor: '#000000',
             overlayOpacity: 0,
             noise: false,
-            noiseIntensity: 10
+            noiseIntensity: 10,
+            pattern: false,
+            patternType: 'dots',
+            patternScale: 25,
+            patternOpacity: 8,
+            patternColor: '#ffffff'
         },
         screenshot: {
             scale: 70,
@@ -65,6 +70,10 @@ const state = {
             headlineUnderline: false,
             headlineStrikethrough: false,
             headlineColor: '#ffffff',
+            headlineUseGradient: false,
+            headlineGradientAngle: 90,
+            headlineGradientStart: '#ff6b6b',
+            headlineGradientEnd: '#ffd93d',
             perLanguageLayout: false,
             languageSettings: {
                 en: {
@@ -98,6 +107,95 @@ const state = {
 };
 
 const baseTextDefaults = JSON.parse(JSON.stringify(state.defaults.text));
+
+// Badge element configs
+const BADGE_CONFIGS = {
+    // Apple-style laurel wreath awards
+    'editors-choice':  { type: 'apple-award', topLine: 'App Store',        mainLine: "Editor's Choice",     fg: '#ffffff', showApple: true },
+    'app-of-year':     { type: 'apple-award', topLine: ' Apple',          mainLine: 'App of the Year',     fg: '#ffffff', showApple: false },
+    'featured-by':     { type: 'apple-award', topLine: 'Featured by',      mainLine: ' App Store',         fg: '#ffffff', showApple: false },
+    'app-of-day':      { type: 'apple-award', topLine: ' Apple',          mainLine: 'App of the Day',      fg: '#ffffff', showApple: false },
+    'apple-spotlight':  { type: 'apple-award', topLine: '',               mainLine: 'Apple Watch\nSpotlight', fg: '#ffffff', showApple: true },
+    // Stats badges with stars and numbers
+    'reviews-count':   { type: 'stats',       mainLine: '100,000+',        subLine: 'REVIEWS',              fg: '#ffffff', showStars: true, starColor: '#fbbf24' },
+    'downloads-1m':    { type: 'stats',       mainLine: '1M+',             subLine: 'DOWNLOADS',            fg: '#ffffff', showStars: false },
+    'downloads-5m':    { type: 'stats',       mainLine: '5M+',             subLine: 'Downloads',            topLine: 'Top rated on Appstore', fg: '#ffffff', showStars: true, starColor: '#fbbf24' },
+    'star-rated':      { type: 'stats',       mainLine: '5 STAR RATED',    subLine: '',                     fg: '#ffffff', showStars: true, starColor: '#fbbf24' },
+    'number-1':        { type: 'stats',       mainLine: '#1',              subLine: 'Most Downloaded',      fg: '#ffffff', showStars: false },
+    // Review quote card
+    'review-quote':    { type: 'review',      stars: 5, quote: 'This app makes everything\neffortless.', attribution: 'App Review, 2026', fg: '#1a1a1a', bg: '#f5f5f7' },
+};
+
+// Template presets
+const TEMPLATE_PRESETS = [
+    {
+        name: 'Clean Minimal',
+        desc: 'Dark background, white text, no extras',
+        preview: 'linear-gradient(180deg, #1c1c1e 0%, #2c2c2e 100%)',
+        background: { type: 'gradient', gradient: {angle: 180, stops: [{color:'#1c1c1e',position:0},{color:'#2c2c2e',position:100}]} },
+        screenshot: { scale: 70, x: 50, y: 55, rotation: 0, perspective: 0, cornerRadius: 8 },
+        text: { headlineSize: 90, headlineColor: '#ffffff', subheadlineSize: 45, subheadlineColor: '#ffffff', position: 'top', headlineWeight: '700' },
+    },
+    {
+        name: "Editor's Choice",
+        desc: 'Blue gradient, white device, award badge',
+        preview: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+        background: { type: 'gradient', gradient: {angle: 135, stops: [{color:'#00c6ff',position:0},{color:'#0072ff',position:100}]} },
+        screenshot: { scale: 68, x: 50, y: 58, rotation: 0, perspective: 0, cornerRadius: 8 },
+        text: { headlineSize: 85, headlineColor: '#ffffff', subheadlineSize: 42, subheadlineColor: '#ffffff', position: 'top', headlineWeight: '700' },
+        badge: 'editors-choice',
+    },
+    {
+        name: 'Bold Marketing',
+        desc: 'Purple gradient, sparkle energy',
+        preview: 'linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)',
+        background: { type: 'gradient', gradient: {angle: 135, stops: [{color:'#8E2DE2',position:0},{color:'#4A00E0',position:100}]} },
+        screenshot: { scale: 65, x: 50, y: 58, rotation: 0, perspective: 0, cornerRadius: 8 },
+        text: { headlineSize: 95, headlineColor: '#ffffff', subheadlineSize: 45, subheadlineColor: '#ffffff', position: 'top', headlineWeight: '800' },
+        badge: 'number-1',
+    },
+    {
+        name: 'App of the Day',
+        desc: 'Sunset energy, trophy badge',
+        preview: 'linear-gradient(130deg, #f12711 0%, #f5af19 100%)',
+        background: { type: 'gradient', gradient: {angle: 130, stops: [{color:'#f12711',position:0},{color:'#f5af19',position:100}]} },
+        screenshot: { scale: 68, x: 50, y: 58, rotation: 0, perspective: 0, cornerRadius: 8 },
+        text: { headlineSize: 90, headlineColor: '#ffffff', subheadlineSize: 44, subheadlineColor: '#ffffff', position: 'top', headlineWeight: '700' },
+        badge: 'app-of-day',
+    },
+    {
+        name: 'Pastel Soft',
+        desc: 'Rose pink, gentle, lifestyle feel',
+        preview: 'linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)',
+        background: { type: 'gradient', gradient: {angle: 135, stops: [{color:'#ee9ca7',position:0},{color:'#ffdde1',position:100}]} },
+        screenshot: { scale: 70, x: 50, y: 55, rotation: 0, perspective: 0, cornerRadius: 8 },
+        text: { headlineSize: 85, headlineColor: '#2d2d3f', subheadlineSize: 42, subheadlineColor: '#4a4a5a', position: 'top', headlineWeight: '700' },
+    },
+    {
+        name: 'Dark Premium',
+        desc: 'Charcoal with blue accents, fintech feel',
+        preview: 'linear-gradient(160deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
+        background: { type: 'gradient', gradient: {angle: 160, stops: [{color:'#0f2027',position:0},{color:'#203a43',position:50},{color:'#2c5364',position:100}]} },
+        screenshot: { scale: 70, x: 50, y: 55, rotation: 0, perspective: 0, cornerRadius: 8 },
+        text: { headlineSize: 90, headlineColor: '#60efff', subheadlineSize: 44, subheadlineColor: '#ffffff', position: 'top', headlineWeight: '700' },
+    },
+    {
+        name: 'Gradient Hero',
+        desc: 'Huge bold text, small device',
+        preview: 'linear-gradient(135deg, #0052D4 0%, #6FB1FC 100%)',
+        background: { type: 'gradient', gradient: {angle: 135, stops: [{color:'#0052D4',position:0},{color:'#4364F7',position:50},{color:'#6FB1FC',position:100}]} },
+        screenshot: { scale: 50, x: 50, y: 70, rotation: 0, perspective: 0, cornerRadius: 8 },
+        text: { headlineSize: 120, headlineColor: '#ffffff', subheadlineSize: 50, subheadlineColor: '#ffffff', position: 'top', headlineWeight: '800' },
+    },
+    {
+        name: 'Perspective',
+        desc: 'Tilted device, modern showcase',
+        preview: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: { type: 'gradient', gradient: {angle: 135, stops: [{color:'#667eea',position:0},{color:'#764ba2',position:100}]} },
+        screenshot: { scale: 65, x: 50, y: 55, rotation: -5, perspective: 12, cornerRadius: 8 },
+        text: { headlineSize: 88, headlineColor: '#ffffff', subheadlineSize: 44, subheadlineColor: '#ffffff', position: 'top', headlineWeight: '700' },
+    },
+];
 
 // Runtime-only state (not persisted)
 let selectedElementId = null;
@@ -436,6 +534,56 @@ function addEmojiElement(emoji, name) {
         fontSize: 60,
         fontWeight: '600',
         fontColor: '#ffffff',
+        italic: false,
+        frame: 'none',
+        frameColor: '#ffffff',
+        frameScale: 100
+    };
+    screenshot.elements.push(el);
+    selectedElementId = el.id;
+    updateCanvas();
+    updateElementsList();
+    updateElementProperties();
+}
+
+function addBadgeElement(badgeType) {
+    const screenshot = getCurrentScreenshot();
+    if (!screenshot) return;
+    if (!screenshot.elements) screenshot.elements = [];
+    const config = BADGE_CONFIGS[badgeType];
+    if (!config) return;
+    // Determine display name for the element list
+    var displayName = config.mainLine || config.topLine || badgeType;
+    if (displayName.includes('\n')) displayName = displayName.split('\n')[0];
+
+    var el = {
+        id: crypto.randomUUID(),
+        type: 'badge',
+        x: 50, y: 50,
+        width: config.type === 'review' ? 45 : 35,
+        rotation: 0,
+        opacity: 100,
+        layer: 'above-text',
+        badgeType: badgeType,
+        badgeConfig: JSON.parse(JSON.stringify(config)),
+        badgeFg: config.fg || '#ffffff',
+        name: displayName,
+        // Legacy compat fields
+        badgeLabel: displayName,
+        badgeBg: 'transparent',
+        badgeTint: 'transparent',
+        badgeIcon: 'laurel',
+        badgeStyle: 'dark',
+        badgeTopScale: 100,
+        badgeMainScale: 100,
+        badgeSubScale: 100,
+        image: null,
+        src: null,
+        text: '',
+        font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display'",
+        fontSize: 60,
+        fontWeight: '600',
+        fontColor: config.fg || '#ffffff',
         italic: false,
         frame: 'none',
         frameColor: '#ffffff',
@@ -1242,6 +1390,10 @@ const deviceDimensions = {
     'iphone-5.5': { width: 1242, height: 2208 },
     'ipad-12.9': { width: 2048, height: 2732 },
     'ipad-11': { width: 1668, height: 2388 },
+    'watch-ultra': { width: 410, height: 502 },
+    'watch-46': { width: 396, height: 484 },
+    'watch-42': { width: 374, height: 448 },
+    'watch-44': { width: 368, height: 448 },
     'android-phone': { width: 1080, height: 1920 },
     'android-phone-hd': { width: 1440, height: 2560 },
     'android-tablet-7': { width: 1200, height: 1920 },
@@ -1866,7 +2018,12 @@ function resetStateToDefaults() {
             overlayColor: '#000000',
             overlayOpacity: 0,
             noise: false,
-            noiseIntensity: 10
+            noiseIntensity: 10,
+            pattern: false,
+            patternType: 'dots',
+            patternScale: 25,
+            patternOpacity: 8,
+            patternColor: '#ffffff'
         },
         screenshot: {
             scale: 70,
@@ -1902,6 +2059,10 @@ function resetStateToDefaults() {
             headlineUnderline: false,
             headlineStrikethrough: false,
             headlineColor: '#ffffff',
+            headlineUseGradient: false,
+            headlineGradientAngle: 90,
+            headlineGradientStart: '#ff6b6b',
+            headlineGradientEnd: '#ffd93d',
             perLanguageLayout: false,
             languageSettings: {
                 en: {
@@ -2358,6 +2519,8 @@ function updateElementsList() {
             thumbContent = `<span class="emoji-thumb">${el.emoji}</span>`;
         } else if (el.type === 'icon' && el.image) {
             thumbContent = `<img src="${el.image.src}" alt="${el.name}" style="padding: 4px; filter: var(--icon-thumb-filter, none);">`;
+        } else if (el.type === 'badge') {
+            thumbContent = `<span class="badge-thumb" style="background:${el.badgeBg};color:${el.badgeFg};font-size:8px;font-weight:700;padding:2px 4px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:32px;display:inline-block;">${el.badgeLabel || 'Badge'}</span>`;
         } else {
             thumbContent = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/>
@@ -2367,7 +2530,7 @@ function updateElementsList() {
         item.innerHTML = `
             <div class="element-item-thumb">${thumbContent}</div>
             <div class="element-item-info">
-                <div class="element-item-name">${el.type === 'text' ? (getElementText(el) || 'Text') : el.type === 'emoji' ? `${el.emoji} ${el.name}` : el.name}</div>
+                <div class="element-item-name">${el.type === 'text' ? (getElementText(el) || 'Text') : el.type === 'emoji' ? `${el.emoji} ${el.name}` : el.type === 'badge' ? `🏷️ ${el.badgeLabel}` : el.name}</div>
                 <div class="element-item-layer">${layerLabels[el.layer] || el.layer}</div>
             </div>
             <div class="element-item-actions">
@@ -2423,7 +2586,7 @@ function updateElementProperties() {
     }
 
     propsEl.style.display = '';
-    const titleMap = { text: 'Text Element', emoji: `${el.emoji} Emoji`, icon: `Icon: ${el.name}`, graphic: el.name || 'Graphic' };
+    const titleMap = { text: 'Text Element', emoji: `${el.emoji} Emoji`, icon: `Icon: ${el.name}`, graphic: el.name || 'Graphic', badge: `Badge: ${el.badgeLabel || el.name}` };
     document.getElementById('element-properties-title').textContent = titleMap[el.type] || el.name || 'Element';
 
     document.getElementById('element-layer').value = el.layer;
@@ -2441,10 +2604,12 @@ function updateElementProperties() {
     // Type-specific properties
     const textProps = document.getElementById('element-text-properties');
     const iconProps = document.getElementById('element-icon-properties');
+    const badgeProps = document.getElementById('element-badge-properties');
 
     // Hide all type-specific panels first
     textProps.style.display = 'none';
     if (iconProps) iconProps.style.display = 'none';
+    if (badgeProps) badgeProps.style.display = 'none';
 
     if (el.type === 'text') {
         textProps.style.display = '';
@@ -2488,6 +2653,12 @@ function updateElementProperties() {
         document.getElementById('element-icon-shadow-x-value').textContent = shadow.x + 'px';
         document.getElementById('element-icon-shadow-y').value = shadow.y;
         document.getElementById('element-icon-shadow-y-value').textContent = shadow.y + 'px';
+    } else if (el.type === 'badge' && badgeProps) {
+        badgeProps.style.display = '';
+        document.getElementById('badge-fg-color').value = el.badgeFg || '#ffffff';
+        document.getElementById('badge-fg-color-hex').value = el.badgeFg || '#ffffff';
+        document.getElementById('badge-type-select').value = el.badgeType || 'editors-choice';
+        syncBadgeTextFields(el);
     }
 }
 
@@ -2530,6 +2701,21 @@ function setupElementEventListeners() {
     if (addIconBtn) {
         addIconBtn.addEventListener('click', () => showIconPicker());
     }
+
+    // Add Badge button
+    const addBadgeBtn = document.getElementById('add-badge-btn');
+    if (addBadgeBtn) {
+        addBadgeBtn.addEventListener('click', () => showBadgePicker());
+    }
+
+    // Badge property listeners
+    setupBadgePropertyListeners();
+
+    // Pattern overlay listeners
+    setupPatternListeners();
+
+    // Gradient text listeners
+    setupGradientTextListeners();
 
     // Icon color picker
     const iconColor = document.getElementById('element-icon-color');
@@ -5962,6 +6148,184 @@ async function processDesktopFilesSequentially(filesData) {
     }
 }
 
+// Open .appscreen project folder via Tauri native directory dialog
+async function openProjectFromTauri() {
+    if (!window.__TAURI__) return;
+    try {
+        const selected = await window.__TAURI__.dialog.open({
+            directory: true,
+            multiple: false,
+            title: 'Open .appscreen Project'
+        });
+        if (!selected) return;
+        await importProjectFromPath(selected);
+    } catch (err) {
+        console.error('Tauri open project error:', err);
+    }
+}
+
+// Open an .appscreen folder from a filesystem path (used by Tauri and Apple Events)
+async function importProjectFromPath(folderPath) {
+    if (!window.__TAURI__) return;
+    try {
+        const fs = window.__TAURI__.fs;
+        const manifestPath = folderPath + '/manifest.json';
+
+        // Check if manifest exists
+        const exists = await fs.exists(manifestPath);
+        if (!exists) {
+            await showAppAlert('Invalid .appscreen project: missing manifest.json', 'error');
+            return;
+        }
+
+        showExportProgress('Loading project...', 'Reading manifest', 0);
+
+        const manifestBytes = await fs.readFile(manifestPath);
+        const manifest = JSON.parse(new TextDecoder().decode(manifestBytes));
+        if (!manifest.appscreen) {
+            hideExportProgress();
+            await showAppAlert('Invalid .appscreen project: not a valid project', 'error');
+            return;
+        }
+
+        showExportProgress('Loading project...', 'Loading images', 20);
+
+        // Helper to load an image from the project folder
+        async function loadImage(imagePath) {
+            if (!imagePath) return null;
+            const fullPath = folderPath + '/' + imagePath;
+            try {
+                const bytes = await fs.readFile(fullPath);
+                const ext = imagePath.split('.').pop().toLowerCase();
+                const mimeMap = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif' };
+                const mime = mimeMap[ext] || 'image/png';
+                const binary = new Uint8Array(bytes);
+                let base64 = '';
+                for (let i = 0; i < binary.length; i += 8192) {
+                    base64 += String.fromCharCode.apply(null, binary.subarray(i, i + 8192));
+                }
+                return `data:${mime};base64,${btoa(base64)}`;
+            } catch (e) {
+                console.warn('Failed to load image:', fullPath, e);
+                return null;
+            }
+        }
+
+        // Reconstruct screenshots with images
+        const screenshots = [];
+        for (let i = 0; i < manifest.screenshots.length; i++) {
+            const s = manifest.screenshots[i];
+            showExportProgress('Loading project...', `Screenshot ${i + 1} of ${manifest.screenshots.length}`, 20 + Math.round(((i + 1) / manifest.screenshots.length) * 60));
+
+            // Restore localized images
+            const localizedImages = {};
+            if (s.localizedImages) {
+                for (const lang of Object.keys(s.localizedImages)) {
+                    const langData = s.localizedImages[lang];
+                    if (langData?.imagePath) {
+                        const src = await loadImage(langData.imagePath);
+                        if (src) {
+                            localizedImages[lang] = { src, name: langData.name };
+                        }
+                    }
+                }
+            }
+
+            // Restore element images
+            const elements = (s.elements || []).map(el => ({ ...el, image: undefined }));
+            for (const el of elements) {
+                if (el.imagePath) {
+                    const src = await loadImage(el.imagePath);
+                    if (src) el.src = src;
+                    delete el.imagePath;
+                }
+            }
+
+            // Restore background image
+            if (s.background?.imagePath) {
+                const bgSrc = await loadImage(s.background.imagePath);
+                if (bgSrc) s.background.image = bgSrc;
+                delete s.background.imagePath;
+            }
+
+            screenshots.push({
+                src: '',
+                name: s.name,
+                deviceType: s.deviceType,
+                localizedImages,
+                background: s.background,
+                screenshot: s.screenshot,
+                text: s.text,
+                elements,
+                popouts: s.popouts || [],
+                overrides: s.overrides || {}
+            });
+        }
+
+        // Restore default element images
+        if (manifest.defaults?.elements) {
+            for (const el of manifest.defaults.elements) {
+                if (el.imagePath) {
+                    const src = await loadImage(el.imagePath);
+                    if (src) el.src = src;
+                    delete el.imagePath;
+                }
+            }
+        }
+
+        // Restore default background image
+        if (manifest.defaults?.background?.imagePath) {
+            const bgSrc = await loadImage(manifest.defaults.background.imagePath);
+            if (bgSrc) manifest.defaults.background.image = bgSrc;
+            delete manifest.defaults.background.imagePath;
+        }
+
+        showExportProgress('Loading project...', 'Creating project', 85);
+
+        const projectName = manifest.projectName || folderPath.split(/[\\/]/).pop().replace(/\.appscreen$/, '');
+        const newId = 'project_' + Date.now();
+        projects.push({ id: newId, name: projectName, screenshotCount: screenshots.length });
+        saveProjectsMeta();
+
+        const projectData = {
+            id: newId,
+            formatVersion: manifest.formatVersion || 2,
+            screenshots,
+            selectedIndex: manifest.selectedIndex || 0,
+            outputDevice: manifest.outputDevice || 'iphone-6.9',
+            customWidth: manifest.customWidth || 1290,
+            customHeight: manifest.customHeight || 2796,
+            currentLanguage: manifest.currentLanguage || 'en',
+            projectLanguages: manifest.projectLanguages || ['en'],
+            defaults: manifest.defaults || state.defaults
+        };
+
+        if (db) {
+            const transaction = db.transaction([PROJECTS_STORE], 'readwrite');
+            const store = transaction.objectStore(PROJECTS_STORE);
+            store.put(projectData);
+            await new Promise((resolve, reject) => {
+                transaction.oncomplete = resolve;
+                transaction.onerror = () => reject(transaction.error);
+            });
+        }
+
+        showExportProgress('Loading project...', 'Switching to project', 95);
+        await switchProject(newId);
+        updateProjectSelector();
+
+        showExportProgress('Complete!', '', 100);
+        await new Promise(resolve => setTimeout(resolve, 800));
+        hideExportProgress();
+
+        await showAppAlert(`Project "${projectName}" imported successfully`, 'info');
+    } catch (e) {
+        hideExportProgress();
+        console.error('Error importing project:', e);
+        await showAppAlert('Failed to import project: ' + e.message, 'error');
+    }
+}
+
 // Import screenshots via Tauri native file dialog
 async function importScreenshotsFromTauri() {
     if (!window.__TAURI__) return;
@@ -6277,12 +6641,17 @@ function updateScreenshotList() {
             : `<img class="screenshot-thumb" src="${thumbSrc}" alt="${screenshot.name}">`;
 
         item.innerHTML = `
-            <div class="drag-handle">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="9" cy="6" r="2"/><circle cx="15" cy="6" r="2"/>
-                    <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
-                    <circle cx="9" cy="18" r="2"/><circle cx="15" cy="18" r="2"/>
-                </svg>
+            <div class="reorder-buttons">
+                <button class="reorder-btn screenshot-move-up" data-index="${index}" ${index === 0 ? 'disabled' : ''} title="Move up">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="18 15 12 9 6 15"/>
+                    </svg>
+                </button>
+                <button class="reorder-btn screenshot-move-down" data-index="${index}" ${index === state.screenshots.length - 1 ? 'disabled' : ''} title="Move down">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </button>
             </div>
             ${thumbHtml}
             <div class="screenshot-info">
@@ -6297,6 +6666,7 @@ function updateScreenshotList() {
             draggedScreenshotIndex = index;
             item.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(index));
         });
 
         item.addEventListener('dragend', () => {
@@ -6464,6 +6834,36 @@ function updateScreenshotList() {
                 e.stopPropagation();
                 menu?.classList.remove('open');
                 showApplyStyleModal(index);
+            });
+        }
+
+        const moveUpBtn = item.querySelector('.screenshot-move-up');
+        if (moveUpBtn) {
+            moveUpBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (index > 0) {
+                    const s = state.screenshots.splice(index, 1)[0];
+                    state.screenshots.splice(index - 1, 0, s);
+                    if (state.selectedIndex === index) state.selectedIndex = index - 1;
+                    else if (state.selectedIndex === index - 1) state.selectedIndex = index;
+                    updateScreenshotList();
+                    updateCanvas();
+                }
+            });
+        }
+
+        const moveDownBtn = item.querySelector('.screenshot-move-down');
+        if (moveDownBtn) {
+            moveDownBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (index < state.screenshots.length - 1) {
+                    const s = state.screenshots.splice(index, 1)[0];
+                    state.screenshots.splice(index + 1, 0, s);
+                    if (state.selectedIndex === index) state.selectedIndex = index + 1;
+                    else if (state.selectedIndex === index + 1) state.selectedIndex = index;
+                    updateScreenshotList();
+                    updateCanvas();
+                }
             });
         }
 
@@ -6759,6 +7159,15 @@ function updateCanvas() {
         drawNoise();
     }
 
+    // Draw pattern overlay
+    drawPattern();
+
+    // Update extracted colors (debounced — only runs when screenshot changes)
+    if (typeof updateExtractedColors === 'function') {
+        clearTimeout(updateExtractedColors._timer);
+        updateExtractedColors._timer = setTimeout(updateExtractedColors, 200);
+    }
+
     // Elements behind screenshot
     drawElements(ctx, dims, 'behind-screenshot');
 
@@ -7008,6 +7417,9 @@ function renderScreenshotToCanvas(index, targetCanvas, targetCtx, dims, previewS
         drawNoiseToContext(targetCtx, dims, bg.noiseIntensity);
     }
 
+    // Draw pattern overlay
+    drawPatternToContext(targetCtx, dims, bg);
+
     const elements = screenshot.elements || [];
 
     // Elements behind screenshot
@@ -7255,7 +7667,21 @@ function drawTextToContext(context, dims, txt) {
     if (headline) {
         const fontStyle = txt.headlineItalic ? 'italic' : 'normal';
         context.font = `${fontStyle} ${txt.headlineWeight} ${headlineLayout.headlineSize}px ${txt.headlineFont}`;
-        context.fillStyle = txt.headlineColor;
+        // Gradient text or solid color
+        if (txt.headlineUseGradient) {
+            var angle = (txt.headlineGradientAngle || 90) * Math.PI / 180;
+            var gLen = dims.width * 0.5;
+            var gx = dims.width / 2 + Math.cos(angle) * gLen;
+            var gy = dims.height * 0.3 + Math.sin(angle) * gLen;
+            var gx2 = dims.width / 2 - Math.cos(angle) * gLen;
+            var gy2 = dims.height * 0.3 - Math.sin(angle) * gLen;
+            var textGrad = context.createLinearGradient(gx2, gy2, gx, gy);
+            textGrad.addColorStop(0, txt.headlineGradientStart || '#ff6b6b');
+            textGrad.addColorStop(1, txt.headlineGradientEnd || '#ffd93d');
+            context.fillStyle = textGrad;
+        } else {
+            context.fillStyle = txt.headlineColor;
+        }
 
         const lines = wrapText(context, headline, dims.width - padding * 2);
         const lineHeight = headlineLayout.headlineSize * (layoutSettings.lineHeight / 100);
@@ -7354,6 +7780,287 @@ function drawTextToContext(context, dims, txt) {
     }
 }
 
+// ===== Badge Rendering (Apple-style laurel wreaths, stats, review cards) =====
+
+function drawBadgeElement(ctx, el, elWidth, dims) {
+    var cfg = el.badgeConfig || BADGE_CONFIGS[el.badgeType] || BADGE_CONFIGS['editors-choice'];
+    var fg = el.badgeFg || cfg.fg || '#ffffff';
+
+    // Reset text alignment — previous draw calls may have changed these
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Per-line text scales
+    var scales = {
+        top: (el.badgeTopScale || 100) / 100,
+        main: (el.badgeMainScale || 100) / 100,
+        sub: (el.badgeSubScale || 100) / 100,
+    };
+
+    if (cfg.type === 'apple-award') {
+        drawAppleAwardBadge(ctx, cfg, fg, elWidth, scales);
+    } else if (cfg.type === 'stats') {
+        drawStatsBadge(ctx, cfg, fg, elWidth, scales);
+    } else if (cfg.type === 'review') {
+        drawReviewBadge(ctx, cfg, elWidth, scales);
+    }
+}
+
+// ── Laurel wreath using the real SVG assets (img/laurel-detailed-left.svg) ──
+function drawLaurelBranch(ctx, centerX, centerY, wreathW, wreathH, color) {
+    // Use the existing high-quality SVG laurel images already loaded in laurelImages
+    var img = laurelImages['laurel-detailed-left'];
+    if (!img || !img.complete || !img.naturalWidth) return;
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+
+    // Scale the SVG branch to match the desired wreath height
+    var branchH = wreathH * 1.05;
+    var aspect = img.naturalWidth / img.naturalHeight;
+    var branchW = branchH * aspect;
+
+    // Recolor the black SVG to the desired color using a temp canvas
+    var tmp = document.createElement('canvas');
+    tmp.width = Math.ceil(branchW);
+    tmp.height = Math.ceil(branchH);
+    var tctx = tmp.getContext('2d');
+    tctx.drawImage(img, 0, 0, branchW, branchH);
+    tctx.globalCompositeOperation = 'source-in';
+    tctx.fillStyle = color;
+    tctx.fillRect(0, 0, branchW, branchH);
+
+    // Position: branches wider apart so text fits in the gap
+    var leftX = -wreathW * 0.52;
+    var topY = -branchH * 0.42; // shifted down so text sits in the open top area
+
+    // Draw left branch
+    ctx.drawImage(tmp, leftX, topY, branchW, branchH);
+
+    // Draw right branch (mirrored)
+    ctx.save();
+    ctx.scale(-1, 1);
+    ctx.drawImage(tmp, leftX, topY, branchW, branchH);
+    ctx.restore();
+
+    ctx.restore();
+}
+
+// ── Apple Award Badge (laurel wreath + Apple logo + text) ──
+function drawAppleAwardBadge(ctx, cfg, fg, elWidth, scales) {
+    ctx.save();
+    var totalH = elWidth * 0.8;
+
+    // Draw laurel wreath — wide enough to frame the text with space
+    var wreathW = elWidth * 1.1;
+    var wreathH = totalH * 1.05;
+    drawLaurelBranch(ctx, 0, totalH * 0.05, wreathW, wreathH, fg);
+
+    // Text goes in the vertical center of the wreath
+    ctx.fillStyle = fg;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    var textY = -totalH * 0.05;
+
+    // Apple logo
+    if (cfg.showApple) {
+        var appleSize = elWidth * 0.07 * scales.top;
+        ctx.font = '400 ' + appleSize + 'px -apple-system, BlinkMacSystemFont, system-ui, sans-serif';
+        ctx.fillText('\uF8FF', 0, textY);
+        textY += appleSize * 1.2;
+    }
+
+    // Top line (small text like "App Store")
+    if (cfg.topLine) {
+        var topSize = elWidth * 0.055 * scales.top;
+        ctx.font = '400 ' + topSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+        ctx.fillText(cfg.topLine, 0, textY);
+        textY += topSize * 1.5;
+    }
+
+    // Main text — auto-size to fit within wreath opening
+    var mainLines = cfg.mainLine.split('\n');
+    var maxTextW = wreathW * 0.48;
+    var mainSize = elWidth * 0.1 * scales.main;
+    ctx.font = '700 ' + mainSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+    // Shrink if any line is too wide
+    for (var li = 0; li < mainLines.length; li++) {
+        while (ctx.measureText(mainLines[li]).width > maxTextW && mainSize > 8) {
+            mainSize -= 0.5;
+            ctx.font = '700 ' + mainSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+        }
+    }
+    for (var i = 0; i < mainLines.length; i++) {
+        ctx.fillText(mainLines[i], 0, textY + i * mainSize * 1.2);
+    }
+    ctx.restore();
+}
+
+// ── Stats Badge (number + stars + laurel wreath) ──
+function drawStatsBadge(ctx, cfg, fg, elWidth, scales) {
+    ctx.save();
+    var totalH = elWidth * 0.75;
+
+    // Laurel wreath — wider for stats badges since numbers are big
+    var wreathW = elWidth * 1.15;
+    var wreathH = totalH * 1.0;
+    drawLaurelBranch(ctx, 0, totalH * 0.08, wreathW, wreathH, fg);
+
+    ctx.fillStyle = fg;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    var gap = elWidth * 0.03;
+
+    // Pre-calculate sizes (each line has its own scale)
+    var topSize = elWidth * 0.05 * scales.top;
+    var maxW = wreathW * 0.42;
+    var mainSize = elWidth * 0.17 * scales.main;
+    ctx.font = '800 ' + mainSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+    while (ctx.measureText(cfg.mainLine).width > maxW && mainSize > 10) {
+        mainSize -= 1;
+        ctx.font = '800 ' + mainSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+    }
+    var starSize = elWidth * 0.04 * scales.sub;
+    var subSize = elWidth * 0.06 * scales.sub;
+
+    // Calculate total content height to center everything vertically
+    var contentH = 0;
+    if (cfg.topLine) contentH += topSize + gap;
+    contentH += mainSize; // main text
+    if (cfg.showStars) contentH += gap + starSize * 2;
+    if (cfg.subLine) contentH += gap + subSize;
+
+    var y = -contentH / 2;
+
+    // Top line
+    if (cfg.topLine) {
+        ctx.font = '400 ' + topSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+        ctx.fillText(cfg.topLine, 0, y + topSize / 2);
+        y += topSize + gap;
+    }
+
+    // Main number/text
+    ctx.font = '800 ' + mainSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+    ctx.fillText(cfg.mainLine, 0, y + mainSize / 2);
+    y += mainSize;
+
+    // Stars row — centered at x=0
+    if (cfg.showStars) {
+        y += gap;
+        var starGap = starSize * 1.6;
+        var totalStarsW = 4 * starGap;
+        var starStartX = -totalStarsW / 2;
+        ctx.fillStyle = cfg.starColor || '#fbbf24';
+        for (var i = 0; i < 5; i++) {
+            drawFilledStar(ctx, starStartX + i * starGap, y + starSize / 2, starSize);
+        }
+        ctx.fillStyle = fg;
+        y += starSize * 2;
+    }
+
+    // Sub line
+    if (cfg.subLine) {
+        y += gap;
+        ctx.font = '600 ' + subSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+        ctx.fillText(cfg.subLine, 0, y + subSize / 2);
+    }
+    ctx.restore();
+}
+
+// ── Review Quote Card ──
+function drawReviewBadge(ctx, cfg, elWidth, scales) {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    var padX = elWidth * 0.08;
+    var padY = elWidth * 0.06;
+    var cardW = elWidth;
+    var fontSize = elWidth * 0.055 * scales.main;
+
+    // Measure text height
+    ctx.font = '400 ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+    var quoteLines = cfg.quote.split('\n');
+    var lineH = fontSize * 1.5;
+    var starsH = elWidth * 0.06;
+    var attribH = fontSize * 1.8;
+    var cardH = padY + starsH + padY * 0.5 + quoteLines.length * lineH + attribH + padY;
+
+    var halfW = cardW / 2;
+    var halfH = cardH / 2;
+    var radius = elWidth * 0.04;
+
+    // Card background
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+    ctx.shadowBlur = elWidth * 0.03;
+    ctx.shadowOffsetY = elWidth * 0.01;
+    ctx.fillStyle = cfg.bg || '#f5f5f7';
+    ctx.beginPath();
+    ctx.roundRect(-halfW, -halfH, cardW, cardH, radius);
+    ctx.fill();
+    ctx.restore();
+
+    var fg = cfg.fg || '#1a1a1a';
+    var y = -halfH + padY;
+
+    // Stars
+    var starSize = starsH * 0.45;
+    var starGap = starSize * 1.5;
+    var starStartX = -(cfg.stars * starGap - starGap) / 2;
+    ctx.fillStyle = '#ff9500';
+    for (var i = 0; i < cfg.stars; i++) {
+        drawFilledStar(ctx, starStartX + i * starGap, y + starsH / 2, starSize);
+    }
+    y += starsH + padY * 0.5;
+
+    // Quote text
+    ctx.fillStyle = fg;
+    ctx.font = '400 ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (var i = 0; i < quoteLines.length; i++) {
+        ctx.fillText(quoteLines[i], 0, y + i * lineH);
+    }
+    y += quoteLines.length * lineH + lineH * 0.3;
+
+    // Attribution
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.font = '400 ' + (fontSize * 0.75) + 'px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif';
+    ctx.fillText(cfg.attribution || '', 0, y);
+    ctx.restore();
+}
+
+// ── Filled 5-point star (for star ratings) ──
+function drawFilledStar(ctx, cx, cy, r) {
+    ctx.beginPath();
+    for (var i = 0; i < 5; i++) {
+        var outerAngle = (i * 72 - 90) * Math.PI / 180;
+        var innerAngle = ((i * 72) + 36 - 90) * Math.PI / 180;
+        var ox = cx + r * Math.cos(outerAngle);
+        var oy = cy + r * Math.sin(outerAngle);
+        var ix = cx + r * 0.45 * Math.cos(innerAngle);
+        var iy = cy + r * 0.45 * Math.sin(innerAngle);
+        if (i === 0) ctx.moveTo(ox, oy);
+        else ctx.lineTo(ox, oy);
+        ctx.lineTo(ix, iy);
+    }
+    ctx.closePath();
+    ctx.fill();
+}
+
+function lightenColor(hex, percent) {
+    if (!hex || hex.startsWith('rgba')) return hex;
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    r = Math.min(255, r + Math.round((255 - r) * percent / 100));
+    g = Math.min(255, g + Math.round((255 - g) * percent / 100));
+    b = Math.min(255, b + Math.round((255 - b) * percent / 100));
+    return '#' + [r, g, b].map(function(c) { return c.toString(16).padStart(2, '0'); }).join('');
+}
+
 // Draw elements for the current screenshot at a specific layer
 function drawElements(context, dims, layer) {
     const elements = getElements();
@@ -7376,7 +8083,9 @@ function drawElementsToContext(context, dims, elements, layer) {
             context.rotate(el.rotation * Math.PI / 180);
         }
 
-        if (el.type === 'emoji' && el.emoji) {
+        if (el.type === 'badge') {
+            drawBadgeElement(context, el, elWidth, dims);
+        } else if (el.type === 'emoji' && el.emoji) {
             const emojiSize = elWidth * 0.85;
             context.font = `${emojiSize}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
             context.textAlign = 'center';
@@ -7850,7 +8559,21 @@ function drawText() {
     if (headline) {
         const fontStyle = text.headlineItalic ? 'italic' : 'normal';
         ctx.font = `${fontStyle} ${text.headlineWeight} ${headlineLayout.headlineSize}px ${text.headlineFont}`;
-        ctx.fillStyle = text.headlineColor;
+        // Gradient text or solid color
+        if (text.headlineUseGradient) {
+            var angle = (text.headlineGradientAngle || 90) * Math.PI / 180;
+            var gLen = dims.width * 0.5;
+            var gx = dims.width / 2 + Math.cos(angle) * gLen;
+            var gy = dims.height * 0.3 + Math.sin(angle) * gLen;
+            var gx2 = dims.width / 2 - Math.cos(angle) * gLen;
+            var gy2 = dims.height * 0.3 - Math.sin(angle) * gLen;
+            var textGrad = ctx.createLinearGradient(gx2, gy2, gx, gy);
+            textGrad.addColorStop(0, text.headlineGradientStart || '#ff6b6b');
+            textGrad.addColorStop(1, text.headlineGradientEnd || '#ffd93d');
+            ctx.fillStyle = textGrad;
+        } else {
+            ctx.fillStyle = text.headlineColor;
+        }
 
         const lines = wrapText(ctx, headline, dims.width - padding * 2);
         const lineHeight = headlineLayout.headlineSize * (layoutSettings.lineHeight / 100);
@@ -7963,6 +8686,195 @@ function drawNoise() {
     }
 
     ctx.putImageData(imageData, 0, 0);
+}
+
+// ===== Background Pattern Overlay =====
+function drawPattern() {
+    var bg = getBackground();
+    if (!bg.pattern) return;
+    var dims = getCanvasDimensions();
+    drawPatternToContext(ctx, dims, bg);
+}
+
+function drawPatternToContext(context, dims, bg) {
+    if (!bg.pattern) return;
+    var type = bg.patternType || 'dots';
+    var scale = bg.patternScale || 25;
+    var opacity = (bg.patternOpacity || 8) / 100;
+    var color = bg.patternColor || '#ffffff';
+    var W = dims.width;
+    var H = dims.height;
+
+    context.save();
+    context.globalAlpha = opacity;
+
+    if (type === 'dots') {
+        var spacing = W * (scale / 1000);
+        if (spacing < 4) spacing = 4;
+        context.fillStyle = color;
+        for (var x = spacing; x < W; x += spacing) {
+            for (var y = spacing; y < H; y += spacing) {
+                context.beginPath();
+                context.arc(x, y, Math.max(1, spacing * 0.06), 0, Math.PI * 2);
+                context.fill();
+            }
+        }
+    } else if (type === 'grid') {
+        var sp = W * (scale / 800);
+        if (sp < 6) sp = 6;
+        context.strokeStyle = color;
+        context.lineWidth = 1;
+        for (var x = sp; x < W; x += sp) {
+            context.beginPath();
+            context.moveTo(x, 0);
+            context.lineTo(x, H);
+            context.stroke();
+        }
+        for (var y = sp; y < H; y += sp) {
+            context.beginPath();
+            context.moveTo(0, y);
+            context.lineTo(W, y);
+            context.stroke();
+        }
+    } else if (type === 'diagonals') {
+        var gap = W * (scale / 600);
+        if (gap < 8) gap = 8;
+        context.strokeStyle = color;
+        context.lineWidth = 1;
+        for (var i = -H; i < W + H; i += gap) {
+            context.beginPath();
+            context.moveTo(i, 0);
+            context.lineTo(i + H, H);
+            context.stroke();
+        }
+    } else if (type === 'waves') {
+        var waveH = H * (scale / 300);
+        if (waveH < 15) waveH = 15;
+        context.strokeStyle = color;
+        context.lineWidth = 1.5;
+        for (var row = 0; row < H + waveH; row += waveH) {
+            context.beginPath();
+            for (var x = 0; x <= W; x += 3) {
+                var y = row + Math.sin((x / W) * Math.PI * 4) * waveH * 0.35;
+                if (x === 0) context.moveTo(x, y);
+                else context.lineTo(x, y);
+            }
+            context.stroke();
+        }
+    } else if (type === 'mesh') {
+        // Soft radial blobs
+        context.globalAlpha = opacity * 0.6;
+        var blobCount = 3 + Math.floor(scale / 20);
+        var rng = 42;
+        for (var i = 0; i < blobCount; i++) {
+            rng = (rng * 16807) % 2147483647;
+            var bx = (rng / 2147483647) * W;
+            rng = (rng * 16807) % 2147483647;
+            var by = (rng / 2147483647) * H;
+            var br = W * (0.15 + (scale / 100) * 0.35);
+            var g = context.createRadialGradient(bx, by, 0, bx, by, br);
+            g.addColorStop(0, color);
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            context.fillStyle = g;
+            context.fillRect(0, 0, W, H);
+        }
+    }
+
+    context.restore();
+}
+
+// ===== Color Extraction from Screenshot =====
+function extractDominantColors(img) {
+    var c = document.createElement('canvas');
+    var size = 40;
+    c.width = size;
+    c.height = size;
+    var tctx = c.getContext('2d');
+    tctx.drawImage(img, 0, 0, size, size);
+    var data = tctx.getImageData(0, 0, size, size).data;
+
+    // Bucket colors
+    var buckets = {};
+    for (var i = 0; i < data.length; i += 16) {
+        var r = Math.round(data[i] / 32) * 32;
+        var g = Math.round(data[i+1] / 32) * 32;
+        var b = Math.round(data[i+2] / 32) * 32;
+        var hex = '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
+        buckets[hex] = (buckets[hex] || 0) + 1;
+    }
+
+    var sorted = Object.entries(buckets).sort(function(a, b) { return b[1] - a[1]; });
+    return sorted.slice(0, 5).map(function(e) { return e[0]; });
+}
+
+function updateExtractedColors() {
+    var section = document.getElementById('extracted-colors-section');
+    var grid = document.getElementById('extracted-colors-grid');
+    if (!section || !grid) return;
+
+    var screenshot = getCurrentScreenshot();
+    if (!screenshot) { section.style.display = 'none'; return; }
+    var img = getScreenshotImage(screenshot);
+    if (!img) { section.style.display = 'none'; return; }
+
+    var colors = extractDominantColors(img);
+    if (!colors.length) { section.style.display = 'none'; return; }
+
+    section.style.display = '';
+    grid.innerHTML = '';
+
+    // Individual color swatches
+    colors.forEach(function(hex) {
+        var swatch = document.createElement('div');
+        swatch.className = 'color-swatch';
+        swatch.style.background = hex;
+        swatch.title = 'Apply gradient from ' + hex;
+        swatch.onclick = function() {
+            applyColorAsGradient(hex);
+        };
+        grid.appendChild(swatch);
+    });
+
+    // Suggested gradient swatch
+    if (colors.length >= 2) {
+        var gSwatch = document.createElement('div');
+        gSwatch.className = 'gradient-swatch';
+        gSwatch.style.background = 'linear-gradient(135deg, ' + colors[0] + ', ' + colors[1] + ')';
+        gSwatch.title = 'Apply suggested gradient';
+        gSwatch.onclick = function() {
+            applyExtractedGradient(colors);
+        };
+        grid.appendChild(gSwatch);
+    }
+}
+
+function applyColorAsGradient(hex) {
+    var r = parseInt(hex.slice(1,3), 16);
+    var g = parseInt(hex.slice(3,5), 16);
+    var b = parseInt(hex.slice(5,7), 16);
+    var dark = '#' + Math.max(0,r-60).toString(16).padStart(2,'0') + Math.max(0,g-60).toString(16).padStart(2,'0') + Math.max(0,b-60).toString(16).padStart(2,'0');
+    var light = '#' + Math.min(255,r+40).toString(16).padStart(2,'0') + Math.min(255,g+40).toString(16).padStart(2,'0') + Math.min(255,b+40).toString(16).padStart(2,'0');
+
+    var bg = getBackground();
+    bg.type = 'gradient';
+    bg.gradient.stops = [
+        { color: dark, position: 0 },
+        { color: hex, position: 50 },
+        { color: light, position: 100 }
+    ];
+    syncUIWithState();
+    updateCanvas();
+}
+
+function applyExtractedGradient(colors) {
+    var bg = getBackground();
+    bg.type = 'gradient';
+    var stops = colors.slice(0, 3).map(function(c, i) {
+        return { color: c, position: Math.round(i * 100 / (Math.min(colors.length, 3) - 1)) };
+    });
+    bg.gradient.stops = stops;
+    syncUIWithState();
+    updateCanvas();
 }
 
 function roundRect(ctx, x, y, width, height, radius) {
@@ -8216,6 +9128,160 @@ async function exportAllLanguages() {
     URL.revokeObjectURL(link.href);
 }
 
+// ===== Project File Export/Import (.appscreen folder) — Tauri only =====
+
+async function exportProjectFile() {
+    if (!window.__TAURI__) return;
+
+    saveState(); // Ensure latest state is persisted
+
+    const project = projects.find(p => p.id === currentProjectId);
+    const projectName = project ? project.name : 'project';
+    const safeName = projectName.replace(/[^a-zA-Z0-9_\- ]/g, '').trim() || 'project';
+
+    try {
+        // Ask user where to save
+        const folderPath = await window.__TAURI__.dialog.save({
+            defaultPath: `${safeName}.appscreen`,
+            title: 'Save Project'
+        });
+        if (!folderPath) return;
+
+        const fs = window.__TAURI__.fs;
+
+        showExportProgress('Saving project...', 'Preparing data', 0);
+
+        let imageIndex = 0;
+        const imageMap = {}; // Maps data URI → relative path
+        const pendingWrites = []; // { path, data }
+
+        // Helper to queue an image for writing and return its relative path
+        function storeImage(src) {
+            if (!src) return null;
+            if (imageMap[src]) return imageMap[src];
+            const match = src.match(/^data:image\/([^;]+);base64,/);
+            const ext = match ? match[1].replace('jpeg', 'jpg') : 'png';
+            const relPath = `images/img_${imageIndex++}.${ext}`;
+            const base64Data = src.replace(/^data:image\/[^;]+;base64,/, '');
+            const binary = atob(base64Data);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            pendingWrites.push({ path: relPath, data: bytes });
+            imageMap[src] = relPath;
+            return relPath;
+        }
+
+        // Serialize screenshots
+        const screenshotsData = state.screenshots.map((s, i) => {
+            showExportProgress('Saving project...', `Screenshot ${i + 1} of ${state.screenshots.length}`, Math.round(((i + 1) / state.screenshots.length) * 70));
+
+            const localizedImages = {};
+            if (s.localizedImages) {
+                Object.keys(s.localizedImages).forEach(lang => {
+                    const langData = s.localizedImages[lang];
+                    if (langData?.src) {
+                        localizedImages[lang] = {
+                            imagePath: storeImage(langData.src),
+                            name: langData.name
+                        };
+                    }
+                });
+            }
+
+            const elements = (s.elements || []).map(el => {
+                const saved = { ...el, image: undefined };
+                if (el.type === 'graphic' && el.src) {
+                    saved.imagePath = storeImage(el.src);
+                    saved.src = undefined;
+                }
+                return saved;
+            });
+
+            return {
+                name: s.name,
+                deviceType: s.deviceType,
+                localizedImages,
+                background: s.background,
+                screenshot: s.screenshot,
+                text: s.text,
+                elements,
+                popouts: s.popouts || [],
+                overrides: s.overrides
+            };
+        });
+
+        // Store background images in per-screenshot backgrounds
+        screenshotsData.forEach(s => {
+            if (s.background?.type === 'image' && s.background.image) {
+                if (typeof s.background.image === 'string' && s.background.image.startsWith('data:')) {
+                    s.background = JSON.parse(JSON.stringify(s.background));
+                    s.background.imagePath = storeImage(s.background.image);
+                    delete s.background.image;
+                }
+            }
+        });
+
+        const defaults = JSON.parse(JSON.stringify(state.defaults));
+        if (defaults.background?.type === 'image' && defaults.background.image) {
+            if (typeof defaults.background.image === 'string' && defaults.background.image.startsWith('data:')) {
+                defaults.background.imagePath = storeImage(defaults.background.image);
+                delete defaults.background.image;
+            }
+        }
+        if (defaults.elements) {
+            defaults.elements = defaults.elements.map(el => {
+                const saved = { ...el, image: undefined };
+                if (el.type === 'graphic' && el.src) {
+                    saved.imagePath = storeImage(el.src);
+                    saved.src = undefined;
+                }
+                return saved;
+            });
+        }
+
+        const manifest = {
+            appscreen: 1,
+            projectName: projectName,
+            formatVersion: 2,
+            outputDevice: state.outputDevice,
+            customWidth: state.customWidth,
+            customHeight: state.customHeight,
+            currentLanguage: state.currentLanguage,
+            projectLanguages: state.projectLanguages,
+            selectedIndex: state.selectedIndex,
+            defaults,
+            screenshots: screenshotsData
+        };
+
+        showExportProgress('Saving project...', 'Writing files', 75);
+
+        // Create the .appscreen folder and images subfolder
+        await fs.mkdir(folderPath, { recursive: true });
+        if (pendingWrites.length > 0) {
+            await fs.mkdir(folderPath + '/images', { recursive: true });
+        }
+
+        // Write manifest
+        await fs.writeFile(folderPath + '/manifest.json', new TextEncoder().encode(JSON.stringify(manifest, null, 2)));
+
+        // Write all images
+        for (let i = 0; i < pendingWrites.length; i++) {
+            showExportProgress('Saving project...', `Image ${i + 1} of ${pendingWrites.length}`, 75 + Math.round(((i + 1) / pendingWrites.length) * 20));
+            await fs.writeFile(folderPath + '/' + pendingWrites[i].path, pendingWrites[i].data);
+        }
+
+        showExportProgress('Complete!', '', 100);
+        await new Promise(resolve => setTimeout(resolve, 800));
+        hideExportProgress();
+
+        await showAppAlert(`Project saved to ${folderPath}`, 'info');
+    } catch (err) {
+        hideExportProgress();
+        console.error('Tauri save error:', err);
+        await showAppAlert('Failed to save project: ' + err.message, 'error');
+    }
+}
+
 // ===== Emoji Picker (inline dropdown) =====
 
 let emojiPickerInitialized = false;
@@ -8223,10 +9289,12 @@ let emojiPickerInitialized = false;
 function showEmojiPicker() {
     const picker = document.getElementById('emoji-picker');
     const iconPicker = document.getElementById('icon-picker');
+    const badgePicker = document.getElementById('badge-picker');
     if (!picker) return;
 
-    // Close icon picker if open
+    // Close other pickers if open
     if (iconPicker) iconPicker.style.display = 'none';
+    if (badgePicker) badgePicker.style.display = 'none';
 
     // Toggle
     if (picker.style.display !== 'none') {
@@ -8353,10 +9421,12 @@ async function loadIconPreview(item, name) {
 function showIconPicker() {
     const picker = document.getElementById('icon-picker');
     const emojiPicker = document.getElementById('emoji-picker');
+    const badgePicker = document.getElementById('badge-picker');
     if (!picker) return;
 
-    // Close emoji picker if open
+    // Close other pickers if open
     if (emojiPicker) emojiPicker.style.display = 'none';
+    if (badgePicker) badgePicker.style.display = 'none';
 
     // Toggle
     if (picker.style.display !== 'none') {
@@ -8453,5 +9523,412 @@ function wireIconClicks(grid) {
     });
 }
 
+// ===== Badge Picker (inline dropdown) =====
+
+function showBadgePicker() {
+    var picker = document.getElementById('badge-picker');
+    var emojiPicker = document.getElementById('emoji-picker');
+    var iconPicker = document.getElementById('icon-picker');
+    if (!picker) return;
+
+    // Close other pickers
+    if (emojiPicker) emojiPicker.style.display = 'none';
+    if (iconPicker) iconPicker.style.display = 'none';
+
+    // Toggle
+    if (picker.style.display !== 'none') {
+        picker.style.display = 'none';
+        return;
+    }
+
+    picker.style.display = '';
+    renderBadgeGrid();
+}
+
+function renderBadgeGrid() {
+    var grid = document.getElementById('badge-grid');
+    if (!grid) return;
+    grid.innerHTML = Object.keys(BADGE_CONFIGS).map(function(key) {
+        var cfg = BADGE_CONFIGS[key];
+        var displayName = cfg.mainLine || cfg.topLine || key;
+        if (displayName.includes('\n')) displayName = displayName.split('\n')[0];
+        var typeLabel = cfg.type === 'apple-award' ? '🏆' : cfg.type === 'review' ? '💬' : '📊';
+        return '<div class="badge-picker-item" data-badge-type="' + key + '" title="' + displayName + '">' +
+            '<div class="badge-picker-preview" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);">' +
+            '<span class="badge-pick-icon">' + typeLabel + '</span>' +
+            '<span class="badge-pick-label">' + displayName + '</span>' +
+            '</div></div>';
+    }).join('');
+
+    grid.querySelectorAll('.badge-picker-item').forEach(function(item) {
+        item.onclick = function() {
+            addBadgeElement(item.dataset.badgeType);
+            document.getElementById('badge-picker').style.display = 'none';
+        };
+    });
+}
+
+function setupBadgePropertyListeners() {
+    var fgColor = document.getElementById('badge-fg-color');
+    var fgColorHex = document.getElementById('badge-fg-color-hex');
+    var typeSelect = document.getElementById('badge-type-select');
+    var toplineInput = document.getElementById('badge-topline-input');
+    var mainlineInput = document.getElementById('badge-mainline-input');
+    var sublineInput = document.getElementById('badge-subline-input');
+    var quoteInput = document.getElementById('badge-quote-input');
+
+    function updateBadgeText(field, value) {
+        var el = getSelectedElement();
+        if (!el || el.type !== 'badge' || !el.badgeConfig) return;
+        el.badgeConfig[field] = value;
+        // Update display name
+        var dn = el.badgeConfig.mainLine || el.badgeConfig.topLine || el.badgeType;
+        if (dn.includes('\n')) dn = dn.split('\n')[0];
+        el.badgeLabel = dn;
+        el.name = dn;
+        updateCanvas();
+        updateElementsList();
+    }
+
+    if (toplineInput) {
+        toplineInput.addEventListener('input', function() { updateBadgeText('topLine', toplineInput.value); });
+    }
+    if (mainlineInput) {
+        mainlineInput.addEventListener('input', function() { updateBadgeText('mainLine', mainlineInput.value); });
+    }
+    if (sublineInput) {
+        sublineInput.addEventListener('input', function() { updateBadgeText('subLine', sublineInput.value); });
+    }
+    if (quoteInput) {
+        quoteInput.addEventListener('input', function() { updateBadgeText('quote', quoteInput.value); });
+    }
+
+    ['top', 'main', 'sub'].forEach(function(key) {
+        var slider = document.getElementById('badge-' + key + '-scale');
+        var valueEl = document.getElementById('badge-' + key + '-scale-value');
+        if (slider) {
+            slider.addEventListener('input', function() {
+                var el = getSelectedElement();
+                if (el && el.type === 'badge') {
+                    var prop = 'badge' + key.charAt(0).toUpperCase() + key.slice(1) + 'Scale';
+                    el[prop] = parseInt(slider.value);
+                    if (valueEl) valueEl.textContent = slider.value + '%';
+                    updateCanvas();
+                }
+            });
+        }
+    });
+
+    if (fgColor) {
+        fgColor.addEventListener('input', function() {
+            var el = getSelectedElement();
+            if (el && el.type === 'badge') {
+                el.badgeFg = fgColor.value;
+                if (el.badgeConfig) el.badgeConfig.fg = fgColor.value;
+                if (fgColorHex) fgColorHex.value = fgColor.value;
+                updateCanvas();
+                updateElementsList();
+            }
+        });
+    }
+    if (fgColorHex) {
+        fgColorHex.addEventListener('change', function() {
+            if (/^#[0-9a-fA-F]{6}$/.test(fgColorHex.value)) {
+                var el = getSelectedElement();
+                if (el && el.type === 'badge') {
+                    el.badgeFg = fgColorHex.value;
+                    if (el.badgeConfig) el.badgeConfig.fg = fgColorHex.value;
+                    if (fgColor) fgColor.value = fgColorHex.value;
+                    updateCanvas();
+                    updateElementsList();
+                }
+            }
+        });
+    }
+    if (typeSelect) {
+        typeSelect.addEventListener('change', function() {
+            var el = getSelectedElement();
+            if (el && el.type === 'badge') {
+                var newType = typeSelect.value;
+                var cfg = BADGE_CONFIGS[newType];
+                if (cfg) {
+                    el.badgeType = newType;
+                    el.badgeConfig = JSON.parse(JSON.stringify(cfg));
+                    el.badgeFg = cfg.fg || '#ffffff';
+                    var dn = cfg.mainLine || cfg.topLine || newType;
+                    if (dn.includes('\n')) dn = dn.split('\n')[0];
+                    el.badgeLabel = dn;
+                    el.name = dn;
+                    updateElementProperties();
+                    updateCanvas();
+                    updateElementsList();
+                }
+            }
+        });
+    }
+}
+
+// Populate badge text fields when a badge is selected
+function syncBadgeTextFields(el) {
+    if (!el || el.type !== 'badge' || !el.badgeConfig) return;
+    var cfg = el.badgeConfig;
+
+    var toplineInput = document.getElementById('badge-topline-input');
+    var mainlineInput = document.getElementById('badge-mainline-input');
+    var sublineInput = document.getElementById('badge-subline-input');
+    var quoteInput = document.getElementById('badge-quote-input');
+    var toplineGroup = document.getElementById('badge-topline-group');
+    var mainlineGroup = document.getElementById('badge-mainline-group');
+    var sublineGroup = document.getElementById('badge-subline-group');
+    var quoteGroup = document.getElementById('badge-quote-group');
+
+    // Show/hide fields based on badge type
+    var isApple = cfg.type === 'apple-award';
+    var isStats = cfg.type === 'stats';
+    var isReview = cfg.type === 'review';
+
+    if (toplineGroup) toplineGroup.style.display = (isApple || (isStats && cfg.topLine)) ? '' : 'none';
+    if (mainlineGroup) mainlineGroup.style.display = (isApple || isStats) ? '' : 'none';
+    if (sublineGroup) sublineGroup.style.display = isStats ? '' : 'none';
+    if (quoteGroup) quoteGroup.style.display = isReview ? '' : 'none';
+
+    if (toplineInput) toplineInput.value = cfg.topLine || '';
+    if (mainlineInput) mainlineInput.value = (cfg.mainLine || '').replace(/\n/g, ' ');
+    if (sublineInput) sublineInput.value = cfg.subLine || '';
+    if (quoteInput) quoteInput.value = cfg.quote || '';
+
+    // Show/hide scale sliders based on which text lines exist
+    var topScaleGroup = document.getElementById('badge-top-scale-group');
+    var subScaleGroup = document.getElementById('badge-sub-scale-group');
+    var hasTop = isApple || (isStats && cfg.topLine);
+    var hasSub = isStats;
+    if (topScaleGroup) topScaleGroup.style.display = hasTop ? '' : 'none';
+    if (subScaleGroup) subScaleGroup.style.display = hasSub ? '' : 'none';
+
+    // Populate scale values
+    ['top', 'main', 'sub'].forEach(function(key) {
+        var slider = document.getElementById('badge-' + key + '-scale');
+        var valueEl = document.getElementById('badge-' + key + '-scale-value');
+        var prop = 'badge' + key.charAt(0).toUpperCase() + key.slice(1) + 'Scale';
+        var val = el[prop] || 100;
+        if (slider) slider.value = val;
+        if (valueEl) valueEl.textContent = val + '%';
+    });
+}
+
+// ===== Pattern Overlay Event Listeners =====
+function setupPatternListeners() {
+    var toggle = document.getElementById('pattern-toggle');
+    var settings = document.getElementById('pattern-settings');
+    if (toggle) {
+        toggle.addEventListener('click', function() {
+            var bg = getBackground();
+            bg.pattern = !bg.pattern;
+            toggle.classList.toggle('active', bg.pattern);
+            if (settings) settings.style.display = bg.pattern ? '' : 'none';
+            updateCanvas();
+        });
+    }
+
+    var typeSelector = document.getElementById('pattern-type-selector');
+    if (typeSelector) {
+        typeSelector.querySelectorAll('button').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                typeSelector.querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                getBackground().patternType = btn.dataset.type;
+                updateCanvas();
+            });
+        });
+    }
+
+    ['scale', 'opacity'].forEach(function(prop) {
+        var slider = document.getElementById('pattern-' + prop);
+        var valueEl = document.getElementById('pattern-' + prop + '-value');
+        if (slider) {
+            slider.addEventListener('input', function() {
+                var bg = getBackground();
+                bg['pattern' + prop.charAt(0).toUpperCase() + prop.slice(1)] = parseInt(slider.value);
+                if (valueEl) valueEl.textContent = slider.value + (prop === 'opacity' ? '%' : '');
+                updateCanvas();
+            });
+        }
+    });
+
+    var colorPicker = document.getElementById('pattern-color');
+    var colorHex = document.getElementById('pattern-color-hex');
+    if (colorPicker) {
+        colorPicker.addEventListener('input', function() {
+            getBackground().patternColor = colorPicker.value;
+            if (colorHex) colorHex.value = colorPicker.value;
+            updateCanvas();
+        });
+    }
+    if (colorHex) {
+        colorHex.addEventListener('change', function() {
+            if (/^#[0-9a-fA-F]{6}$/.test(colorHex.value)) {
+                getBackground().patternColor = colorHex.value;
+                if (colorPicker) colorPicker.value = colorHex.value;
+                updateCanvas();
+            }
+        });
+    }
+}
+
+// ===== Gradient Text Event Listeners =====
+function setupGradientTextListeners() {
+    var toggle = document.getElementById('headline-gradient-toggle');
+    var settings = document.getElementById('headline-gradient-settings');
+    if (toggle) {
+        toggle.addEventListener('click', function() {
+            var text = getTextSettings();
+            text.headlineUseGradient = !text.headlineUseGradient;
+            toggle.classList.toggle('active', text.headlineUseGradient);
+            if (settings) settings.style.display = text.headlineUseGradient ? '' : 'none';
+            updateCanvas();
+        });
+    }
+
+    var angleSlider = document.getElementById('headline-gradient-angle');
+    var angleValue = document.getElementById('headline-gradient-angle-value');
+    if (angleSlider) {
+        angleSlider.addEventListener('input', function() {
+            getTextSettings().headlineGradientAngle = parseInt(angleSlider.value);
+            if (angleValue) angleValue.textContent = angleSlider.value + '°';
+            updateCanvas();
+        });
+    }
+
+    var startColor = document.getElementById('headline-gradient-start');
+    var startHex = document.getElementById('headline-gradient-start-hex');
+    if (startColor) {
+        startColor.addEventListener('input', function() {
+            getTextSettings().headlineGradientStart = startColor.value;
+            if (startHex) startHex.value = startColor.value;
+            updateCanvas();
+        });
+    }
+    if (startHex) {
+        startHex.addEventListener('change', function() {
+            if (/^#[0-9a-fA-F]{6}$/.test(startHex.value)) {
+                getTextSettings().headlineGradientStart = startHex.value;
+                if (startColor) startColor.value = startHex.value;
+                updateCanvas();
+            }
+        });
+    }
+
+    var endColor = document.getElementById('headline-gradient-end');
+    var endHex = document.getElementById('headline-gradient-end-hex');
+    if (endColor) {
+        endColor.addEventListener('input', function() {
+            getTextSettings().headlineGradientEnd = endColor.value;
+            if (endHex) endHex.value = endColor.value;
+            updateCanvas();
+        });
+    }
+    if (endHex) {
+        endHex.addEventListener('change', function() {
+            if (/^#[0-9a-fA-F]{6}$/.test(endHex.value)) {
+                getTextSettings().headlineGradientEnd = endHex.value;
+                if (endColor) endColor.value = endHex.value;
+                updateCanvas();
+            }
+        });
+    }
+}
+
+// ===== Template Presets =====
+
+function applyTemplatePreset(index) {
+    var preset = TEMPLATE_PRESETS[index];
+    if (!preset) return;
+    var screenshot = getCurrentScreenshot();
+    if (!screenshot) return;
+
+    // Apply background
+    if (preset.background) {
+        screenshot.background.type = preset.background.type;
+        if (preset.background.gradient) {
+            screenshot.background.gradient.angle = preset.background.gradient.angle;
+            screenshot.background.gradient.stops = JSON.parse(JSON.stringify(preset.background.gradient.stops));
+        }
+    }
+
+    // Apply screenshot settings
+    if (preset.screenshot) {
+        var keys = Object.keys(preset.screenshot);
+        for (var i = 0; i < keys.length; i++) {
+            setScreenshotSetting(keys[i], preset.screenshot[keys[i]]);
+        }
+    }
+
+    // Apply text settings
+    if (preset.text) {
+        var txt = screenshot.text;
+        if (preset.text.headlineSize !== undefined) txt.headlineSize = preset.text.headlineSize;
+        if (preset.text.headlineColor !== undefined) txt.headlineColor = preset.text.headlineColor;
+        if (preset.text.subheadlineSize !== undefined) txt.subheadlineSize = preset.text.subheadlineSize;
+        if (preset.text.subheadlineColor !== undefined) txt.subheadlineColor = preset.text.subheadlineColor;
+        if (preset.text.position !== undefined) txt.position = preset.text.position;
+        if (preset.text.headlineWeight !== undefined) txt.headlineWeight = preset.text.headlineWeight;
+        // Update language settings too
+        if (txt.languageSettings) {
+            var layoutLang = txt.currentLayoutLang || 'en';
+            if (txt.languageSettings[layoutLang]) {
+                if (preset.text.headlineSize !== undefined) txt.languageSettings[layoutLang].headlineSize = preset.text.headlineSize;
+                if (preset.text.subheadlineSize !== undefined) txt.languageSettings[layoutLang].subheadlineSize = preset.text.subheadlineSize;
+                if (preset.text.position !== undefined) txt.languageSettings[layoutLang].position = preset.text.position;
+            }
+        }
+    }
+
+    // Handle badge
+    if (preset.badge) {
+        // Remove existing badge elements
+        if (screenshot.elements) {
+            screenshot.elements = screenshot.elements.filter(function(el) { return el.type !== 'badge'; });
+        }
+        addBadgeElement(preset.badge);
+    }
+
+    syncUIWithState();
+    updateCanvas();
+}
+
+function renderTemplateGrid() {
+    var grid = document.getElementById('template-presets-grid');
+    if (!grid) return;
+    grid.innerHTML = TEMPLATE_PRESETS.map(function(preset, i) {
+        return '<div class="template-preset-card" data-index="' + i + '">' +
+            '<div class="template-preset-preview" style="background: ' + preset.preview + ';"></div>' +
+            '<div class="template-preset-info">' +
+            '<div class="template-preset-name">' + preset.name + '</div>' +
+            '<div class="template-preset-desc">' + preset.desc + '</div>' +
+            '</div></div>';
+    }).join('');
+
+    grid.querySelectorAll('.template-preset-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            applyTemplatePreset(parseInt(card.dataset.index));
+        });
+    });
+}
+
+// Initialize templates section toggle
+function initTemplatesSection() {
+    var toggle = document.getElementById('templates-toggle');
+    var section = document.getElementById('templates-section');
+    if (toggle && section) {
+        toggle.addEventListener('click', function() {
+            var isOpen = section.style.display !== 'none';
+            section.style.display = isOpen ? 'none' : '';
+            toggle.classList.toggle('collapsed', isOpen);
+        });
+    }
+    renderTemplateGrid();
+}
+
 // Initialize the app
 initSync();
+initTemplatesSection();
