@@ -1,5 +1,6 @@
 use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, Manager};
+use tauri_plugin_updater::UpdaterExt;
 
 pub fn run() {
     tauri::Builder::default()
