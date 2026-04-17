@@ -6,8 +6,40 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let handle = app.handle();
+
+            // Check for updates in the background
+            let update_handle = handle.clone();
+            tauri::async_runtime::spawn(async move {
+                match update_handle.updater().expect("updater not configured").check().await {
+                    Ok(Some(update)) => {
+                        // Notify frontend about available update
+                        if let Some(window) = update_handle.get_webview_window("main") {
+                            let version = update.version.clone();
+                            let _ = window.emit("update-available", &version);
+                        }
+                        // Download and install
+                        match update.download_and_install(|_, _| {}, || {}).await {
+                            Ok(_) => {
+                                if let Some(window) = update_handle.get_webview_window("main") {
+                                    let _ = window.emit("update-installed", "");
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Failed to install update: {}", e);
+                            }
+                        }
+                    }
+                    Ok(None) => {
+                        // No update available
+                    }
+                    Err(e) => {
+                        eprintln!("Update check failed: {}", e);
+                    }
+                }
+            });
 
             // Build macOS app menu with standard items
             #[cfg(target_os = "macos")]
