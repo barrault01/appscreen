@@ -1,12 +1,12 @@
 [package]
-name = "yuzu-shot"
+name = "appstorescreen"
 version = "1.1.5"
-description = "App Store Screenshot Generator"
+description = "AppStoreScreens - App Store Screenshot Generator"
 authors = ["YUZUHub"]
 edition = "2021"
 
 [lib]
-name = "yuzu_shot_lib"
+name = "appstorescreen_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

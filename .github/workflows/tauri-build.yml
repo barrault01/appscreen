@@ -62,8 +62,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'yuzu.shot ${{ github.ref_name }}'
-          releaseBody: 'See the assets below to download and install yuzu.shot.'
+          releaseName: 'AppStoreScreens ${{ github.ref_name }}'
+          releaseBody: 'See the assets below to download and install AppStoreScreens.'
           releaseDraft: false
           prerelease: false
           includeUpdaterJson: true

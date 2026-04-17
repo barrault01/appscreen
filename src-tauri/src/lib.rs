@@ -50,7 +50,7 @@ pub fn run() {
 
             #[cfg(target_os = "macos")]
             let app_menu = {
-                SubmenuBuilder::new(handle, "yuzu.shot")
+                SubmenuBuilder::new(handle, "AppStoreScreens")
                     .about(None)
                     .separator()
                     .item(&settings_item)
@@ -122,7 +122,7 @@ pub fn run() {
             let report_issue =
                 MenuItemBuilder::with_id("report-issue", "Report Issue").build(handle)?;
             let visit_website =
-                MenuItemBuilder::with_id("visit-website", "Visit yuzuhub.com").build(handle)?;
+                MenuItemBuilder::with_id("visit-website", "Visit GitHub").build(handle)?;
 
             let help_menu = SubmenuBuilder::new(handle, "Help")
                 .item(&documentation)
@@ -156,19 +156,19 @@ pub fn run() {
                     // Help links open directly in system browser
                     "documentation" => {
                         let _ = tauri_plugin_opener::open_url(
-                            "https://github.com/YUZU-Hub/appscreen",
+                            "https://github.com/barrault01/appscreen",
                             None::<&str>,
                         );
                     }
                     "report-issue" => {
                         let _ = tauri_plugin_opener::open_url(
-                            "https://github.com/YUZU-Hub/appscreen/issues",
+                            "https://github.com/barrault01/appscreen/issues",
                             None::<&str>,
                         );
                     }
                     "visit-website" => {
                         let _ = tauri_plugin_opener::open_url(
-                            "https://yuzuhub.com/en",
+                            "https://github.com/barrault01/appscreen",
                             None::<&str>,
                         );
                     }
