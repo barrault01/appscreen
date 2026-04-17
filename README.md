@@ -6,7 +6,7 @@ A free, open-source tool for creating professional App Store screenshots with cu
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> Originally created by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com). Now maintained and extended by [Antoine Barrault](https://github.com/barrault01).
+> Based on [appscreen](https://github.com/YUZU-Hub/appscreen) by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com). Extended by [Antoine Barrault](https://github.com/barrault01).
 
 ## Features
 
@@ -201,6 +201,6 @@ MIT License - feel free to use, modify, and distribute.
 
 ## Authors
 
-Originally created by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com/en).
+Based on [appscreen](https://github.com/YUZU-Hub/appscreen) by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com/en).
 
-Now maintained by [Antoine Barrault](https://github.com/barrault01) — adding ASO badges, template presets, background patterns, gradient text, color extraction, auto-update, and more.
+Extended by [Antoine Barrault](https://github.com/barrault01) — ASO badges, template presets, background patterns, gradient text, color extraction, auto-update, and more.
