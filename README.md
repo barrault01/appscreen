@@ -1,15 +1,12 @@
-# App Store Screenshot Generator
+# AppStoreScreens
 
-A free, open-source tool for creating beautiful App Store screenshots with customizable backgrounds, text overlays, and 3D device mockups.
-
-
-**[Start using it now. Hosted on GitHub Pages](https://yuzu-hub.github.io/appscreen/)**
+A free, open-source tool for creating professional App Store screenshots with customizable backgrounds, text overlays, 3D device mockups, ASO badges, and AI-powered features.
 
 ![App Store Screenshot Generator](img/screenshot-generator.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> 🍋 **Built by [YuzuHub](https://yuzuhub.com)** — We build smart AI products in Düsseldorf, Germany. Check out [yuzu.chat](https://yuzu.chat), [Eno](https://eno.yuzuhub.com), [VoltPlan](https://voltplan.app) and more.
+> Originally created by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com). Now maintained and extended by [Antoine Barrault](https://github.com/barrault01).
 
 ## Features
 
@@ -202,6 +199,8 @@ MIT License - feel free to use, modify, and distribute.
 
 - **iPhone 15 Pro Max 3D Model** by [MajdyModels](https://sketchfab.com/majdymodels) - Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-## Author
+## Authors
 
-Proudly vibe coded by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com/en) — building smart AI products from Düsseldorf, Germany.
+Originally created by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com/en).
+
+Now maintained by [Antoine Barrault](https://github.com/barrault01) — adding ASO badges, template presets, background patterns, gradient text, color extraction, auto-update, and more.
