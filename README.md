@@ -6,7 +6,7 @@ A free, open-source tool for creating professional App Store screenshots with cu
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> Based on [appscreen](https://github.com/YUZU-Hub/appscreen) by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com). Extended by [Antoine Barrault](https://github.com/barrault01).
+**Built by [Antoine Barrault](https://github.com/barrault01)** | Based on [appscreen](https://github.com/YUZU-Hub/appscreen) by [YuzuHub](https://yuzuhub.com)
 
 ## Features
 
@@ -199,8 +199,8 @@ MIT License - feel free to use, modify, and distribute.
 
 - **iPhone 15 Pro Max 3D Model** by [MajdyModels](https://sketchfab.com/majdymodels) - Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-## Authors
+## Author
+
+**[Antoine Barrault](https://github.com/barrault01)** — ASO badges, template presets, background patterns, gradient text, screenshot color extraction, auto-update, release pipeline, and more.
 
 Based on [appscreen](https://github.com/YUZU-Hub/appscreen) by [Stefan](https://github.com/BlackMac) at [YuzuHub](https://yuzuhub.com/en).
-
-Extended by [Antoine Barrault](https://github.com/barrault01) — ASO badges, template presets, background patterns, gradient text, color extraction, auto-update, and more.
