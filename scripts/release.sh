@@ -56,7 +56,7 @@ echo ""
 
 # ── Check tools ───────────────────────────────────────────────────────
 echo "▸ Checking tools..."
-source "$HOME/.cargo/env" 2>/dev/null || true
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env" || true
 
 for cmd in node npm cargo gh; do
   if ! command -v $cmd &>/dev/null; then
