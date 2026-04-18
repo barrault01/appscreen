@@ -139,8 +139,18 @@ function setCachedModelFrameColor(presetId, deviceType) {
 function initThreeJS() {
     if (isThreeJSInitialized) return;
 
+    console.log('[3D] initThreeJS called, THREE available:', typeof THREE !== 'undefined');
+
+    if (typeof THREE === 'undefined') {
+        console.error('[3D] THREE.js not loaded!');
+        return;
+    }
+
     const container = document.getElementById('threejs-container');
-    if (!container) return;
+    if (!container) {
+        console.error('[3D] threejs-container not found');
+        return;
+    }
 
     // Create scene with a gradient background color (we'll update this dynamically)
     threeScene = new THREE.Scene();
@@ -220,11 +230,13 @@ function loadPhoneModel() {
     phoneModelLoading = true;
 
     const config = deviceConfigs[currentDeviceModel] || deviceConfigs.iphone;
+    console.log('[3D] Loading model:', config.modelPath);
     const loader = new THREE.GLTFLoader();
 
     loader.load(
         config.modelPath,
         (gltf) => {
+            console.log('[3D] Model loaded successfully');
             phoneModelLoading = false;
             phoneModel = gltf.scene;
 
