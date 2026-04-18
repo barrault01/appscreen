@@ -190,6 +190,47 @@ Built something with this tool? Add your app to the list by submitting a pull re
 | Dandelion: Write and Let Go | An ephemeral journal for writing to let go, not save. | [apple.com](https://apps.apple.com/us/app/dandelion-write-and-let-go/id6757363901) |
 | *Your app here* | *Submit a PR to add your app* | *Your app link* |
 
+## Building
+
+### Web (no install needed)
+
+```bash
+npx serve .
+# Open http://localhost:3000
+```
+
+### Desktop App (Tauri)
+
+**Prerequisites:** Node.js, npm, Rust (via `rustup` or Homebrew)
+
+```bash
+# Install dependencies
+npm install
+
+# Run in dev mode (with hot reload + devtools)
+npx @tauri-apps/cli dev
+
+# Build production app
+npx @tauri-apps/cli build
+```
+
+The built app is at `src-tauri/target/release/bundle/macos/AppStoreScreens.app`
+
+### Release
+
+```bash
+./scripts/release.sh patch   # 1.0.0 → 1.0.1
+./scripts/release.sh minor   # 1.0.0 → 1.1.0
+./scripts/release.sh major   # 1.0.0 → 2.0.0
+```
+
+The release script:
+1. Bumps version in `package.json`, `tauri.conf.json`, `Cargo.toml`
+2. Builds the Tauri app
+3. Signs with Developer ID (if available)
+4. Notarizes with Apple via `asc` (if available)
+5. Creates a GitHub Release with the signed zip
+
 ## License
 
 MIT License - feel free to use, modify, and distribute.
