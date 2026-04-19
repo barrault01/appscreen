@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(gh api:*)",
+      "WebSearch",
+      "Bash(echo \"exit: $?\")",
+      "Read(//Users/antoine/.claude/skills/**)",
+      "Bash(cargo check:*)",
+      "Bash(npx tauri:*)",
+      "Bash(open /Users/antoine/Documents/repos/perso/appscreen/src-tauri/target/release/bundle/macos/appscreen.app)",
+      "Bash(security find-identity:*)",
+      "Bash(chmod +x:*)",
+      "Read(//tmp/**)",
+      "Read(//tmp/test-project.appscreen/**)",
+      "Bash(mkdir -p /Users/antoine/.claude/skills/appscreen-aso)",
+      "Bash(cp /Users/antoine/Documents/repos/perso/appscreen/SKILL.md /Users/antoine/.claude/skills/appscreen-aso/SKILL.md)",
+      "Bash(cp /Users/antoine/Documents/repos/perso/appscreen/generate_appscreen.py /Users/antoine/.claude/skills/appscreen-aso/generate_appscreen.py)",
+      "Bash(cp /Users/antoine/Documents/repos/perso/appscreen/SKILL.md ~/.claude/skills/appscreen-aso/SKILL.md)",
+      "Bash(cp /Users/antoine/Documents/repos/perso/appscreen/generate_appscreen.py ~/.claude/skills/appscreen-aso/generate_appscreen.py)",
+      "Bash(npm run:*)",
+      "Bash(git status:*)",
+      "Bash(ls -lah /Users/antoine/Documents/repos/perso/appscreen/*.js /Users/antoine/Documents/repos/perso/appscreen/*.html /Users/antoine/Documents/repos/perso/appscreen/*.css)",
+      "Bash(swift build:*)",
+      "Bash(swift --version)",
+      "Bash(swift test:*)",
+      "Bash(find Sources -name \"*.swift\" -exec cat {} +)",
+      "Bash(find Tests -name \"*.swift\" -exec cat {} +)",
+      "Bash(xcodebuild -scheme AppStoreScreens -destination \"platform=macOS\" build)",
+      "Bash(xcodebuild -scheme AppStoreScreens -destination \"platform=macOS\" -derivedDataPath /tmp/AppStoreScreens-build build)",
+      "Bash(open /tmp/AppStoreScreens-build/Build/Products/Debug/AppStoreScreens.app)",
+      "Bash(find . -name \"*.swift\" -not -path \"./.build/*\" -not -path \"*/gen/*\" -exec cat {} +)",
+      "Bash(grep -v \"^--$\")",
+      "Bash(swiftc /tmp/test_glb.swift -o /tmp/test_glb)",
+      "Bash(/tmp/test_glb)"
+    ]
+  }
+}
